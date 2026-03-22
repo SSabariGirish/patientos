@@ -1,0 +1,155 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center mt-4">
+    <div class="col-md-8">
+        <h1 class="display-5 fw-bold text-primary mb-3 text-center">Check Your Combination.</h1>
+        <p class="lead text-muted mb-4 text-center">Medications can interact dangerously. Tell us what you're taking, and what you plan to take, to instantly check for hidden clashes.</p>
+        
+        <div class="card shadow-sm p-4 border-0 rounded-4 bg-white">
+            <form action="/" method="POST" id="medCheckForm" enctype="multipart/form-data">
+                
+                <div class="mb-4">
+                    <label class="form-label fw-bold">1. What are you currently taking?</label>
+                    <p class="text-muted small mb-2">Upload a picture of your prescription/medication boxes, OR type them manually.</p>
+                    
+                    <input class="form-control mb-2" type="file" name="prescription_images" id="prescriptionImages" accept="image/*" multiple>
+                    <div id="fileList1" class="text-primary small mb-3 fw-bold"></div>
+                    
+                    <textarea class="form-control" name="current_meds" id="currentMedsInput" rows="2" placeholder="e.g., Panadol, Zyrtec..."></textarea>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <label class="form-label fw-bold">2. What do you plan to take?</label>
+                        <p class="text-muted small mb-2">Upload a picture OR type it.</p>
+                        
+                        <input class="form-control mb-2" type="file" name="planned_prescription_images" id="plannedPrescriptionImages" accept="image/*" multiple>
+                        <div id="fileList2" class="text-primary small mb-3 fw-bold"></div>
+                        
+                        <input type="text" class="form-control" name="planned_med" id="plannedMedInput" placeholder="e.g., Fexofenadine">
+                    </div>
+
+                    <div class="col-md-6 mb-4 position-relative">
+                        <label class="form-label fw-bold">3. Why are you taking it?</label>
+                        <p class="text-muted small mb-2">&nbsp;</p> 
+                        <input type="text" class="form-control" id="reasonInput" name="reason" placeholder="Start typing a symptom..." autocomplete="off" required>
+                        <ul class="list-group position-absolute w-100 shadow-sm" id="suggestionList" style="z-index: 1000; display: none; max-height: 200px; overflow-y: auto;"></ul>
+                        <div id="reasonError" class="invalid-feedback">
+                            Please select a valid symptom from the list.
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-grid mt-2">
+                    <button class="btn btn-primary btn-lg fw-bold" type="submit">Analyze Combination</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- FEATURE 1: AUTOCOMPLETE FOR SYMPTOMS ---
+    const validSymptoms = [
+        "Allergies", "Back Pain", "Cold", "Cough", "Fever", 
+        "Flu", "Headache", "Heartburn", "Indigestion", "Joint Pain", 
+        "Migraine", "Muscle Pain", "Nausea", "Sore Throat", "Toothache"
+    ];
+
+    const reasonInput = document.getElementById('reasonInput');
+    const suggestionList = document.getElementById('suggestionList');
+    const medCheckForm = document.getElementById('medCheckForm');
+
+    reasonInput.addEventListener('input', function() {
+        const query = this.value.toLowerCase();
+        suggestionList.innerHTML = ''; 
+        if (!query) { suggestionList.style.display = 'none'; return; }
+
+        const filteredSymptoms = validSymptoms.filter(symptom => symptom.toLowerCase().includes(query));
+
+        if (filteredSymptoms.length > 0) {
+            suggestionList.style.display = 'block';
+            filteredSymptoms.forEach(symptom => {
+                const li = document.createElement('li');
+                li.className = 'list-group-item list-group-item-action cursor-pointer';
+                li.style.cursor = 'pointer'; 
+                li.textContent = symptom;
+                li.addEventListener('click', function() {
+                    reasonInput.value = symptom;
+                    suggestionList.style.display = 'none';
+                    reasonInput.classList.remove('is-invalid'); 
+                });
+                suggestionList.appendChild(li);
+            });
+        } else {
+            suggestionList.style.display = 'none';
+        }
+    });
+
+    document.addEventListener('click', function(e) {
+        if (e.target !== reasonInput && e.target !== suggestionList) suggestionList.style.display = 'none';
+    });
+
+    medCheckForm.addEventListener('submit', function(e) {
+        const selectedValue = reasonInput.value;
+        if (!validSymptoms.includes(selectedValue)) {
+            e.preventDefault(); 
+            reasonInput.classList.add('is-invalid'); 
+        }
+    });
+
+    // --- FEATURE 2: UNIVERSAL MULTI-FILE UPLOAD & AI AUTO-EXTRACTION ---
+    // We create a reusable function so we can attach this magic to ANY file input on the page!
+    function setupAIAutoExtraction(fileInputId, textDisplayId, textInputId) {
+        const fileInput = document.getElementById(fileInputId);
+        const fileDisplay = document.getElementById(textDisplayId);
+        const targetInput = document.getElementById(textInputId);
+
+        fileInput.addEventListener('change', async function() {
+            fileDisplay.innerHTML = ''; 
+            if (this.files.length > 0) {
+                let names = [];
+                for (let i = 0; i < this.files.length; i++) names.push("📄 " + this.files[i].name);
+                
+                fileDisplay.innerHTML = "Attached:<br>" + names.join("<br>") + 
+                    `<br><span id='status-${fileInputId}' class='text-warning mt-1 fw-bold d-inline-block small'>⏳ AI is reading...</span>`;
+
+                const formData = new FormData();
+                for (let i = 0; i < this.files.length; i++) {
+                    // Send to the universal endpoint under a generic name
+                    formData.append('extraction_files', this.files[i]); 
+                }
+
+                try {
+                    const response = await fetch('/extract_meds', { method: 'POST', body: formData });
+                    const data = await response.json();
+                    const statusSpan = document.getElementById(`status-${fileInputId}`);
+                    
+                    if (data.extracted_text) {
+                        // Append or overwrite the target text input
+                        if (targetInput.value.trim() !== '') {
+                            targetInput.value += ', ' + data.extracted_text;
+                        } else {
+                            targetInput.value = data.extracted_text;
+                        }
+                        statusSpan.innerHTML = "✅ Extraction complete!";
+                        statusSpan.className = "text-success mt-1 fw-bold d-inline-block small";
+                    } else {
+                        statusSpan.innerHTML = "⚠️ Could not auto-read text.";
+                        statusSpan.className = "text-danger mt-1 fw-bold d-inline-block small";
+                    }
+                } catch (error) {
+                    console.error("Extraction failed:", error);
+                    document.getElementById(`status-${fileInputId}`).innerHTML = "⚠️ Auto-read failed.";
+                    document.getElementById(`status-${fileInputId}`).className = "text-danger mt-1 fw-bold d-inline-block small";
+                }
+            }
+        });
+    }
+
+    // Attach the magic to BOTH upload zones!
+    setupAIAutoExtraction('prescriptionImages', 'fileList1', 'currentMedsInput');
+    setupAIAutoExtraction('plannedPrescriptionImages', 'fileList2', 'plannedMedInput');
+</script>
+{% endblock %}

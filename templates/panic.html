@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center mt-4">
+    <div class="col-md-8 text-center">
+        
+        <div class="card shadow-lg rounded-4 border-0">
+            <div class="card-header bg-primary text-white py-4 rounded-top-4">
+                <h2 class="fw-bold mb-0">Let's get this sorted.</h2>
+                <p class="mb-0 mt-2 fs-5">It is completely okay. You've done the right thing by checking.</p>
+            </div>
+            
+            <div class="card-body p-5 text-start bg-white">
+                <p class="lead text-muted mb-4">First, take a deep breath. Mistakes with medication happen all the time. The best thing to do right now is simply get a quick professional opinion.</p>
+
+                <h4 class="fw-bold mb-3 text-dark">Here is what to do next:</h4>
+
+                <div class="alert alert-warning border-0 shadow-sm mb-4" role="alert" style="background-color: #fffbeb;">
+                    <h5 class="fw-bold text-dark mb-2">1. Have a quick chat with NHS 111</h5>
+                    <p class="mb-0 text-dark">Dial <strong>111</strong> on your phone. It's free, available 24/7, and you'll speak to trained staff who deal with this every day. Just let them know what you took and roughly when.</p>
+                </div>
+
+                <div class="alert alert-info border-0 shadow-sm mb-4" role="alert" style="background-color: #f0fdf4;">
+                    <h5 class="fw-bold text-dark mb-2">2. Keep the boxes handy</h5>
+                    <p class="mb-0 text-dark">While you're on the phone, grab the packaging for the medicines. The person on the line might ask you to read the exact ingredients off the back to help them advise you.</p>
+                </div>
+
+                <div class="alert alert-danger border-0 shadow-sm mb-4" role="alert" style="background-color: #fef2f2;">
+                    <h5 class="fw-bold text-danger mb-3">3. When to dial 999 instead:</h5>
+                    
+                    <p class="mb-3 text-dark">
+                        <strong>If YOU took the medicine:</strong><br> 
+                        Please don't wait. Dial <strong>999</strong> for an ambulance immediately if you are struggling to breathe, feeling faint, or experiencing severe chest or stomach pain.
+                    </p>
+                    
+                    <p class="mb-0 text-dark">
+                        <strong>If you are helping someone else:</strong><br> 
+                        Dial <strong>999</strong> immediately if they are unconscious, having a seizure, or having difficulty breathing.
+                    </p>
+                </div>
+                
+                <hr class="my-4">
+                
+                <p class="fs-6 text-muted mb-0"><strong>A quick note:</strong> Please don't try to force anyone to vomit the medicines unless a medical professional on the phone specifically tells you to. Just make the call and follow their lead.</p>
+            </div>
+            
+            <div class="card-footer bg-light p-4 rounded-bottom-4">
+                <a href="/" class="btn btn-outline-secondary btn-lg w-100">&larr; Back to the homepage</a>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

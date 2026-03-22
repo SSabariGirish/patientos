@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        
+        <a href="/" class="btn btn-outline-secondary mb-4">&larr; Check another combination</a>
+
+        <div class="card shadow border-0 rounded-4 border-top border-{{ result.alert_level }} border-5">
+            <div class="card-header bg-white py-3">
+                <h3 class="mb-0 text-{{ result.alert_level }}">{{ result.title }}</h3>
+            </div>
+            
+            <div class="card-body p-4">
+                <p class="fs-5 text-muted">{{ result.explanation }}</p>
+                <hr>
+                
+                <h5 class="fw-bold mt-4">The Clash:</h5>
+                <p class="fs-5">{{ result.the_clash | safe }}</p>
+
+                <div class="alert alert-{{ result.alert_level }} mt-4 fw-bold p-4 fs-5" role="alert">
+                    {{ result.action | safe }}
+                </div>
+
+                {% if result.alert_level in ['danger', 'warning'] %}
+                <div class="d-grid mt-4">
+                    <a href="/panic" class="btn btn-danger btn-lg p-3 fw-bold text-uppercase shadow pulse-button">
+                        🚨 I Have Already Taken It. What Do I Do?
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+
+            
+            <div class="card-footer bg-light text-muted small text-center py-3">
+                Source: <i>Mock Database MVP (Pending NICE/BNF API Integration)</i>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}
